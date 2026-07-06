@@ -1,0 +1,50 @@
+@import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2402-2@1.0/Cafe24Shongshong.woff2');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 1. 화면의 모든 폰트를 카페24 숑숑체로 100% 박제 */
+html, body, div, span, h1, button, .fc, .fc * {
+  font-family: 'Cafe24Shongshong', 'Malgun Gothic', sans-serif !important;
+}
+
+/* 2. '2026년 7월' 타이틀: 두껍고 예쁜 연보라색 */
+.fc .fc-toolbar-title {
+  color: #a48bc2 !important;
+  font-weight: bold !important;
+  font-size: 2.2rem !important;
+}
+
+/* 3. 상단 버튼 (today, <, >) 연보라색 동글동글 디자인 */
+.fc .fc-button-primary {
+  background-color: #cbb4e4 !important; 
+  border-color: #cbb4e4 !important;
+  color: white !important;
+  border-radius: 9999px !important;
+  padding: 6px 16px !important;
+  font-weight: bold !important;
+}
+.fc .fc-button-primary:hover {
+  background-color: #b397cf !important;
+  border-color: #b397cf !important;
+}
+
+/* 4. 달력 내부 일정 바(Bar) 연보라 깔맞춤 */
+.fc-event {
+  background-color: #f1e7fc !important; 
+  border-color: #cbb4e4 !important;     
+  color: #6a4f8a !important;            
+  font-weight: bold !important;
+  border-radius: 8px !important;
+  padding: 4px 6px !important;
+}
+
+/* 5. 오늘 날짜 칸 배경색 은은하게 */
+.fc .fc-day-today {
+  background-color: #f9f4fe !important;
+}
+
+/* 6. 달력 내부 실선들을 연보라빛으로 변경 */
+.fc td, .fc th {
+  border-color: #f1e9f7 !important;
+}
