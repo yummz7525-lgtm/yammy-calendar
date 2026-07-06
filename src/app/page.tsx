@@ -5,7 +5,11 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
 export default function ViewerCalendarPage() {
-  const [events, setEvents] = useState([]);
+  // 기존 코드:
+const [events, setEvents] = useState([]);
+
+// 수정할 코드:
+const [events, setEvents] = useState<any[]>([]);
 
   // 🔑 나만의 관리자 비밀번호를 여기에 설정해 주세요!
   const ADMIN_PASSWORD = '0525'; 
@@ -19,7 +23,7 @@ export default function ViewerCalendarPage() {
   }, []);
 
   // 2. 로컬스토리지 저장 로직
-  const saveToLocalStorage = (newEvents) => {
+  const saveToLocalStorage = (newEvents: any) => {
     setEvents(newEvents);
     localStorage.setItem('yammy_locked_events', JSON.stringify(newEvents));
   };
