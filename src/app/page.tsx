@@ -5,11 +5,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
 export default function ViewerCalendarPage() {
-  // 기존 코드:
-const [events, setEvents] = useState([]);
-
-// 수정할 코드:
-const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
 
   // 🔑 나만의 관리자 비밀번호를 여기에 설정해 주세요!
   const ADMIN_PASSWORD = '0525'; 
@@ -40,7 +36,7 @@ const [events, setEvents] = useState<any[]>([]);
   };
 
   // 3. [추가] 날짜 클릭 시
-  const handleDateClick = (arg) => {
+  const handleDateClick = (arg: any) => {
     if (!checkPassword()) return; 
 
     const title = prompt('📌 새로운 일정을 입력해 주세요:\n(팁: "13:00 그타진행" 처럼 시간을 앞에 쓰면 자동 정렬됩니다!)');
@@ -58,23 +54,23 @@ const [events, setEvents] = useState<any[]>([]);
   };
 
   // 4. [삭제] 일정 클릭 시
-  const handleEventClick = (arg) => {
+  const handleEventClick = (arg: any) => {
     if (!checkPassword()) return; 
 
     if (confirm(`❌ '${arg.event.title}' 일정을 삭제하시겠습니까?`)) {
-      const updatedEvents = events.filter((event) => event.id !== arg.event.id);
+      const updatedEvents = events.filter((event: any) => event.id !== arg.event.id);
       saveToLocalStorage(updatedEvents);
     }
   };
 
   // 5. [수정] 일정을 마우스로 드래그해서 날짜를 옮겼을 때
-  const handleEventDrop = (arg) => {
+  const handleEventDrop = (arg: any) => {
     if (!checkPassword()) {
       arg.revert(); 
       return;
     }
 
-    const updatedEvents = events.map((event) => {
+    const updatedEvents = events.map((event: any) => {
       if (event.id === arg.event.id) {
         return {
           ...event,
@@ -119,7 +115,7 @@ const [events, setEvents] = useState<any[]>([]);
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
             events={events}
-            editable={true}          
+            editable={true}           
             selectable={true}
             locale="ko"
             height="850px"
@@ -128,7 +124,7 @@ const [events, setEvents] = useState<any[]>([]);
             dateClick={handleDateClick}
             eventClick={handleEventClick}
             eventDrop={handleEventDrop}  
-            eventOrder="title"        // ⭐ 여기! 제목(시간숫자) 기준으로 자동 정렬하는 옵션 추가
+            eventOrder="title"
           />
         </div>
       </div>
