@@ -6,9 +6,8 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, onSnapshot, setDoc } from "firebase/firestore";
 
-// [중요] 아래 firebaseConfig 내용을 본인의 실제 설정값으로 수정하세요!
 const firebaseConfig = {
-  "AIzaSyB7d3FUDU3snyXBrrJ5VxRJz1RLNjwLd7k",
+  apiKey: "AIzaSyB7d3FUDU3snyXBrrJ5VxRJz1RLNjwLd7k",
   authDomain: "yammy-broadcast-schedule.firebaseapp.com",
   projectId: "yammy-broadcast-schedule",
   storageBucket: "yammy-broadcast-schedule.firebasestorage.app",
@@ -67,15 +66,22 @@ export default function ViewerCalendarPage() {
       <style>{`
         @font-face { font-family: 'Cafe24Shongshong'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2402-2@1.0/Cafe24Shongshong.woff2') format('woff2'); }
         html, body, div, span, h1, button, .fc, .fc * { font-family: 'Cafe24Shongshong', 'Malgun Gothic', sans-serif !important; }
+        .fc .fc-col-header-cell-cushion { color: #7c5fa2 !important; font-size: 1.1rem !important; padding: 8px 0 !important; }
+        .fc .fc-daygrid-day-number { color: #8a6ea8 !important; font-size: 1.05rem !important; padding: 8px !important; }
         .fc .fc-toolbar-title { color: #a48bc2 !important; font-weight: bold !important; font-size: 2.4rem !important; }
-        .fc .fc-button-primary { background-color: #cbb4e4 !important; border-color: #cbb4e4 !important; color: white !important; border-radius: 9999px !important; }
-        .fc .fc-button-primary:hover { background-color: #b397cf !important; }
-        .fc-event { background-color: #f1e7fc !important; border-color: #cbb4e4 !important; color: #5c3b7a !important; border-radius: 6px !important; padding: 5px !important; }
+        .fc .fc-button-primary { background-color: #cbb4e4 !important; border-color: #cbb4e4 !important; color: white !important; border-radius: 9999px !important; padding: 6px 18px !important; font-weight: bold !important; }
+        .fc .fc-button-primary:hover { background-color: #b397cf !important; border-color: #b397cf !important; }
+        .fc-daygrid-day { cursor: pointer; }
+        .fc-event { background-color: #f1e7fc !important; border-color: #cbb4e4 !important; border-radius: 6px !important; padding: 5px 12px !important; font-size: 0.9rem !important; }
+        a.fc-event, a.fc-event *, .fc-event-title, .fc-event-time { color: #5c3b7a !important; font-weight: bold !important; text-align: center !important; }
         .fc .fc-day-today { background-color: #f9f4fe !important; }
+        .fc td, .fc th { border-color: #f2eaf8 !important; }
       `}</style>
-      <div style={{ padding: '3rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ color: '#a48bc2', fontSize: '2.6rem', fontWeight: 'bold', marginBottom: '3rem' }}>🔒 얌미의 방송일정표</h1>
-        <div style={{ width: '100%', maxWidth: '1100px', border: '5px solid #e1d3f0', padding: '2.5rem', borderRadius: '2.5rem' }}>
+      <div style={{ width: '100%', minHeight: '100vh', backgroundColor: '#ffffff', padding: '3rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', boxSizing: 'border-box' }}>
+        <h1 style={{ color: '#a48bc2', fontSize: '2.6rem', fontWeight: 'bold', marginBottom: '3rem', textAlign: 'center' }}>
+          🔒 얌미의 방송일정표
+        </h1>
+        <div style={{ width: '100%', maxWidth: '1100px', backgroundColor: '#ffffff', padding: '2.5rem', borderRadius: '2.5rem', border: '5px solid #e1d3f0', boxSizing: 'border-box' }}>
           <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
