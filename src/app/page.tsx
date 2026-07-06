@@ -6,8 +6,9 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, onSnapshot, setDoc } from "firebase/firestore";
 
+// [중요] 아래 firebaseConfig 내용을 본인의 실제 설정값으로 수정하세요!
 const firebaseConfig = {
-  apiKey: "AIzaSyB7d3FUDU3snyXBrrJ5VxRJz1RLNjwLd7k",
+  "AIzaSyB7d3FUDU3snyXBrrJ5VxRJz1RLNjwLd7k",
   authDomain: "yammy-broadcast-schedule.firebaseapp.com",
   projectId: "yammy-broadcast-schedule",
   storageBucket: "yammy-broadcast-schedule.firebasestorage.app",
@@ -25,7 +26,7 @@ export default function ViewerCalendarPage() {
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, "calendar", "events"), (doc) => {
-      if (doc.exists()) setEvents(doc.data().list);
+      if (doc.exists()) setEvents(doc.data().list || []);
     });
     return () => unsubscribe();
   }, []);
@@ -36,44 +37,57 @@ export default function ViewerCalendarPage() {
 
   const handleEventClick = async (arg: any) => {
     const input = prompt('🔒 관리자 비밀번호를 입력해 주세요:');
-    if (input !== ADMIN_PASSWORD) { alert('❌ 틀렸습니다.'); return; }
+    if (input !== ADMIN_PASSWORD) { alert('❌ 비밀번호가 틀렸습니다.'); return; }
+    
     const action = prompt(`📌 '${arg.event.title}' 작업 선택\n1: 삭제, 2: 수정`);
     if (action === '1') {
-      if (confirm('정말 삭제할까요?')) await saveToFirebase(events.filter((e: any) => e.id !== arg.event.id));
+      if (confirm('정말 삭제하시겠습니까?')) {
+        await saveToFirebase(events.filter((e: any) => e.id !== arg.event.id));
+      }
     } else if (action === '2') {
-      const newTitle = prompt('새로운 내용 입력:', arg.event.title);
-      if (newTitle) await saveToFirebase(events.map((e: any) => e.id === arg.event.id ? { ...e, title: newTitle } : e));
+      const newTitle = prompt('새로운 내용을 입력하세요:', arg.event.title);
+      if (newTitle) {
+        const updated = events.map((e: any) => e.id === arg.event.id ? { ...e, title: newTitle } : e);
+        await saveToFirebase(updated);
+      }
     }
   };
 
   const handleDateClick = async (arg: any) => {
-    const input = prompt('🔒 관리자 비밀번호:');
+    const input = prompt('🔒 관리자 비밀번호를 입력해 주세요:');
     if (input !== ADMIN_PASSWORD) return;
-    const title = prompt('📌 일정 입력:');
-    if (title) await saveToFirebase([...events, { id: String(Date.now()), title, start: arg.dateStr, allDay: true }]);
+    const title = prompt('📌 새로운 일정을 입력해 주세요:');
+    if (!title) return;
+    const newEvent = { id: String(Date.now()), title, start: arg.dateStr, allDay: true };
+    await saveToFirebase([...events, newEvent]);
   };
 
   return (
     <>
       <style>{`
         @font-face { font-family: 'Cafe24Shongshong'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2402-2@1.0/Cafe24Shongshong.woff2') format('woff2'); }
-        body, .fc, .fc * { font-family: 'Cafe24Shongshong', sans-serif !important; }
-        .fc .fc-toolbar-title { color: #a48bc2 !important; font-size: 2rem !important; }
-        .fc .fc-button-primary { background-color: #cbb4e4 !important; border-color: #cbb4e4 !important; }
-        .fc-event { background-color: #f1e7fc !important; border-color: #cbb4e4 !important; color: #5c3b7a !important; }
+        html, body, div, span, h1, button, .fc, .fc * { font-family: 'Cafe24Shongshong', 'Malgun Gothic', sans-serif !important; }
+        .fc .fc-toolbar-title { color: #a48bc2 !important; font-weight: bold !important; font-size: 2.4rem !important; }
+        .fc .fc-button-primary { background-color: #cbb4e4 !important; border-color: #cbb4e4 !important; color: white !important; border-radius: 9999px !important; }
+        .fc .fc-button-primary:hover { background-color: #b397cf !important; }
+        .fc-event { background-color: #f1e7fc !important; border-color: #cbb4e4 !important; color: #5c3b7a !important; border-radius: 6px !important; padding: 5px !important; }
+        .fc .fc-day-today { background-color: #f9f4fe !important; }
       `}</style>
-      <div style={{ padding: '3rem', maxWidth: '1100px', margin: '0 auto' }}>
-        <h1 style={{ textAlign: 'center', color: '#a48bc2', marginBottom: '2rem' }}>🔒 얌미의 방송일정표</h1>
-        <FullCalendar
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={events}
-          dateClick={handleDateClick}
-          eventClick={handleEventClick}
-          editable={true}
-          locale="ko"
-          buttonText={{ today: 'today' }}
-        />
+      <div style={{ padding: '3rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <h1 style={{ color: '#a48bc2', fontSize: '2.6rem', fontWeight: 'bold', marginBottom: '3rem' }}>🔒 얌미의 방송일정표</h1>
+        <div style={{ width: '100%', maxWidth: '1100px', border: '5px solid #e1d3f0', padding: '2.5rem', borderRadius: '2.5rem' }}>
+          <FullCalendar
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            events={events}
+            editable={true}
+            selectable={true}
+            locale="ko"
+            height="850px"
+            dateClick={handleDateClick}
+            eventClick={handleEventClick}
+          />
+        </div>
       </div>
     </>
   );
