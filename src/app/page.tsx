@@ -21,9 +21,11 @@ const db = getFirestore(app);
 
 export default function ViewerCalendarPage() {
   const [events, setEvents] = useState<any[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
   const ADMIN_PASSWORD = '0525';
 
   useEffect(() => {
+    setIsMounted(true);
     const unsubscribe = onSnapshot(doc(db, "calendar", "events"), (doc) => {
       if (doc.exists()) setEvents(doc.data().list || []);
     });
@@ -53,6 +55,8 @@ export default function ViewerCalendarPage() {
     if (title) await saveToFirebase([...events, { id: String(Date.now()), title, start: arg.dateStr, allDay: true }]);
   };
 
+  if (!isMounted) return null;
+
   return (
     <>
       <style>{`
@@ -60,7 +64,23 @@ export default function ViewerCalendarPage() {
         html, body, div, span, h1, button, .fc, .fc * { font-family: 'Cafe24Shongshong', sans-serif !important; }
         
         .fc .fc-toolbar-title, .fc .fc-col-header-cell-cushion, .fc .fc-daygrid-day-number { color: #7c5fa2 !important; }
-        .fc-event, .fc-event-title { color: #7c5fa2 !important; background-color: #f1e7fc !important; border-color: #cbb4e4 !important; font-size: 0.85em; }
+        
+        /* 일정 글씨 줄바꿈 및 스타일 */
+        .fc-event { 
+            background-color: #f1e7fc !important; 
+            border-color: #cbb4e4 !important; 
+            white-space: normal !important; 
+            margin-bottom: 2px !important;
+        }
+        .fc-event-title { 
+            color: #7c5fa2 !important; 
+            white-space: normal !important; 
+            font-size: 0.85em; 
+            display: block; 
+            line-height: 1.2;
+            padding: 2px !important;
+        }
+        
         .fc .fc-button-primary { background-color: #cbb4e4 !important; border: none !important; color: white !important; font-weight: bold !important; }
         .fc td, .fc th { border-color: #f2eaf8 !important; }
         .fc .fc-day-today { background-color: #f9f4fe !important; }
@@ -70,6 +90,7 @@ export default function ViewerCalendarPage() {
           .calendar-box { padding: 10px !important; border-width: 3px !important; border-radius: 1rem !important; }
           .fc .fc-toolbar-title { font-size: 1.1rem !important; }
           .fc .fc-button { padding: 4px 8px !important; font-size: 0.8rem !important; }
+          .fc-event-title { font-size: 0.75rem !important; }
         }
       `}</style>
       <div className="main-wrapper" style={{ width: '100%', padding: '3rem', boxSizing: 'border-box' }}>
