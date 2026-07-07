@@ -82,7 +82,6 @@ export default function ViewerCalendarPage() {
             initialView="dayGridMonth"
             events={events}
             height="auto"
-            aspectRatio={window.innerWidth < 600 ? 1.0 : 1.35}
             locale="ko"
             buttonText={{ today: 'Today', prev: '<', next: '>' }}
             headerToolbar={{ left: 'prev,next today', center: 'title', right: '' }}
