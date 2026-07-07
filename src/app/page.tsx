@@ -59,25 +59,30 @@ export default function ViewerCalendarPage() {
         @font-face { font-family: 'Cafe24Shongshong'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2402-2@1.0/Cafe24Shongshong.woff2') format('woff2'); }
         html, body, div, span, h1, button, .fc, .fc * { font-family: 'Cafe24Shongshong', sans-serif !important; }
         
-        /* 색상 통일: 진한 연보라색 (#7c5fa2) */
         .fc .fc-toolbar-title, .fc .fc-col-header-cell-cushion, .fc .fc-daygrid-day-number { color: #7c5fa2 !important; }
-        .fc-event, .fc-event-title { color: #7c5fa2 !important; background-color: #f1e7fc !important; border-color: #cbb4e4 !important; }
-        
-        /* 버튼 및 레이아웃 */
+        .fc-event, .fc-event-title { color: #7c5fa2 !important; background-color: #f1e7fc !important; border-color: #cbb4e4 !important; font-size: 0.85em; }
         .fc .fc-button-primary { background-color: #cbb4e4 !important; border: none !important; color: white !important; font-weight: bold !important; }
         .fc td, .fc th { border-color: #f2eaf8 !important; }
         .fc .fc-day-today { background-color: #f9f4fe !important; }
+
+        @media (max-width: 600px) {
+          .main-wrapper { padding: 10px !important; }
+          .calendar-box { padding: 10px !important; border-width: 3px !important; border-radius: 1rem !important; }
+          .fc .fc-toolbar-title { font-size: 1.1rem !important; }
+          .fc .fc-button { padding: 4px 8px !important; font-size: 0.8rem !important; }
+        }
       `}</style>
-      <div style={{ width: '100%', padding: '3rem', boxSizing: 'border-box' }}>
+      <div className="main-wrapper" style={{ width: '100%', padding: '3rem', boxSizing: 'border-box' }}>
         <h1 style={{ textAlign: 'center', color: '#a48bc2', fontSize: '2.6rem', fontWeight: 'bold', marginBottom: '3rem' }}>
           📅 얌미의 방송일정표
         </h1>
-        <div style={{ maxWidth: '1100px', margin: '0 auto', border: '5px solid #e1d3f0', padding: '2.5rem', borderRadius: '2.5rem' }}>
+        <div className="calendar-box" style={{ maxWidth: '1100px', margin: '0 auto', border: '5px solid #e1d3f0', padding: '2.5rem', borderRadius: '2.5rem' }}>
           <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
             events={events}
-            height="850px"
+            height="auto"
+            aspectRatio={window.innerWidth < 600 ? 1.0 : 1.35}
             locale="ko"
             buttonText={{ today: 'Today', prev: '<', next: '>' }}
             headerToolbar={{ left: 'prev,next today', center: 'title', right: '' }}
