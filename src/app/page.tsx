@@ -160,10 +160,10 @@ export default function ViewerCalendarPage() {
         .fc-event-title { 
             color: #7c5fa2 !important; 
             white-space: normal !important; 
-            font-size: 0.85em; 
+            font-size: 0.72em !important; 
             display: block; 
-            line-height: 1.2;
-            padding: 2px !important;
+            line-height: 1.1;
+            padding: 1px 2px !important;
         }
         
         .fc .fc-button-primary { background-color: #cbb4e4 !important; border: none !important; color: white !important; font-weight: bold !important; }
@@ -175,7 +175,7 @@ export default function ViewerCalendarPage() {
           .calendar-box { padding: 10px !important; border-width: 3px !important; border-radius: 1rem !important; }
           .fc .fc-toolbar-title { font-size: 1.1rem !important; }
           .fc .fc-button { padding: 4px 8px !important; font-size: 0.8rem !important; }
-          .fc-event-title { font-size: 0.75rem !important; }
+          .fc-event-title { font-size: 0.65rem !important; }
         }
       `}</style>
 
