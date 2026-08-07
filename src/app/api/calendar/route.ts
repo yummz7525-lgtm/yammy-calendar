@@ -20,7 +20,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { password, action, selectedEventId, updatedEvent, newEvent, title, id } = body;
 
-    // 환경변수 비밀번호와 비교 (설정이 안 되어 있다면 기본값 처리)
     const envPassword = process.env.ADMIN_PASSWORD;
     if (envPassword && password !== envPassword) {
       return NextResponse.json({ success: false, message: '비밀번호가 올바르지 않습니다.' }, { status: 401 });
