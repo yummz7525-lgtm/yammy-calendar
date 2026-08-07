@@ -28,9 +28,17 @@ export default function ViewerCalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [selectedDateStr, setSelectedDateStr] = useState<string>('');
   const [eventTitleInput, setEventTitleInput] = useState('');
+  const [savedPassword, setSavedPassword] = useState<string>('');
 
   useEffect(() => {
     setIsMounted(true);
+    
+    // 브라우저 로컬 저장소에 저장된 비번 불러오기
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('yammy_admin_pw');
+      if (stored) setSavedPassword(stored);
+    }
+
     const unsubscribe = onSnapshot(doc(db, "calendar", "events"), (docSnap) => {
       if (docSnap.exists()) setEvents(docSnap.data().list || []);
     });
@@ -39,11 +47,14 @@ export default function ViewerCalendarPage() {
 
   const callApi = async (action: 'ADD' | 'EDIT' | 'DELETE', payload: any) => {
     try {
+      // 저장된 비번이 있으면 사용, 없으면 입력한 비번 사용
+      const authPassword = savedPassword || inputPassword;
+
       const response = await fetch('/api/calendar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          password: inputPassword,
+          password: authPassword,
           action,
           ...payload
         })
@@ -51,10 +62,22 @@ export default function ViewerCalendarPage() {
 
       const result = await response.json();
       if (!result.success) {
+        // 비번이 틀렸을 경우 저장된 비번 삭제
+        if (savedPassword) {
+          localStorage.removeItem('yammy_admin_pw');
+          setSavedPassword('');
+        }
         const errMsg = result.message || result.error || '알 수 없는 오류가 발생했습니다.';
         alert(`❌ ${errMsg}`);
         return false;
       }
+
+      // 성공 시 브라우저에 비번 저장 (다음부터 자동 통과)
+      if (authPassword) {
+        localStorage.setItem('yammy_admin_pw', authPassword);
+        setSavedPassword(authPassword);
+      }
+
       return true;
     } catch (err: any) {
       alert(`❌ 통신 에러: ${err?.message || '네트워크 오류'}`);
@@ -69,15 +92,28 @@ export default function ViewerCalendarPage() {
       start: arg.event.startStr ? arg.event.startStr.split('T')[0] : ''
     };
     setSelectedEvent(eventObj);
-    setInputPassword('');
-    setModalType('PASSWORD');
+    
+    // 저장된 비번이 있으면 비번 창 스킵
+    if (savedPassword) {
+      setModalType('EVENT_ACTION');
+    } else {
+      setInputPassword('');
+      setModalType('PASSWORD');
+    }
   };
 
   const handleDateClick = (arg: any) => {
     setSelectedEvent(null);
     setSelectedDateStr(arg.dateStr);
-    setInputPassword('');
-    setModalType('PASSWORD');
+    
+    // 저장된 비번이 있으면 비번 창 스킵
+    if (savedPassword) {
+      setEventTitleInput('');
+      setModalType('ADD_TITLE');
+    } else {
+      setInputPassword('');
+      setModalType('PASSWORD');
+    }
   };
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -150,7 +186,6 @@ export default function ViewerCalendarPage() {
         
         .fc .fc-toolbar-title, .fc .fc-col-header-cell-cushion, .fc .fc-daygrid-day-number { color: #7c5fa2 !important; }
         
-        /* 일정 카드 박스 중앙 정렬 강제 */
         .fc-event { 
             background-color: #f1e7fc !important; 
             border-color: #cbb4e4 !important; 
@@ -163,7 +198,6 @@ export default function ViewerCalendarPage() {
             text-align: center !important;
         }
         
-        /* FullCalendar 내부 자식 컨테이너 가운데 정렬 강제 */
         .fc-event-main, .fc-event-main-frame { 
             width: 100% !important;
             display: flex !important;
