@@ -4,22 +4,28 @@ import { getFirestore } from 'firebase-admin/firestore';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '0525';
 
-// Firebase Admin 초기화
+// Firebase Private Key 자동 줄바꿈 처리
+function getFormattedPrivateKey() {
+  const rawKey = process.env.FIREBASE_PRIVATE_KEY;
+  if (!rawKey) return undefined;
+  
+  // 따옴표 제거 및 \n 문자열을 실제 줄바꿈으로 변환
+  let formatted = rawKey.replace(/^"|"$/g, '');
+  formatted = formatted.replace(/\\n/g, '\n');
+  return formatted;
+}
+
 if (!getApps().length) {
   try {
-    const pKey = process.env.FIREBASE_PRIVATE_KEY 
-      ? process.env.FIREBASE_PRIVATE_KEY.replace(/^"|"$/g, '').replace(/\\n/g, '\n')
-      : undefined;
-
     initializeApp({
       credential: cert({
         projectId: process.env.FIREBASE_PROJECT_ID || "yammy-broadcast-schedule",
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: pKey,
+        privateKey: getFormattedPrivateKey(),
       }),
     });
-  } catch (initErr: any) {
-    console.error("Firebase Init Error:", initErr);
+  } catch (err) {
+    console.error('Firebase Admin Init Error:', err);
   }
 }
 
@@ -28,12 +34,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { password, action, newEvent, updatedEvent, selectedEventId, title } = body;
 
-    // 1. 비밀번호 검증
     if (password !== ADMIN_PASSWORD) {
-      return NextResponse.json({ 
-        success: false, 
-        message: '비밀번호가 올바르지 않습니다.' 
-      }, { status: 401 });
+      return NextResponse.json({ success: false, message: '비밀번호가 올바르지 않습니다.' }, { status: 401 });
     }
 
     const db = getFirestore();
@@ -41,7 +43,6 @@ export async function POST(request: Request) {
     const docSnap = await docRef.get();
     let events = docSnap.exists ? (docSnap.data()?.list || []) : [];
 
-    // 2. 동작 처리
     if (action === 'ADD') {
       events.push(newEvent);
     } else if (action === 'EDIT') {
@@ -64,16 +65,14 @@ export async function POST(request: Request) {
       });
     }
 
-    // 3. DB 업데이트 저장
     await docRef.set({ list: events });
     return NextResponse.json({ success: true, list: events });
 
   } catch (error: any) {
-    // 서버 내부 상세 오류 메시지를 그대로 전달
-    console.error('Server Fatal Error:', error);
+    console.error('API Server Error:', error);
     return NextResponse.json({ 
       success: false, 
-      message: `서버 오류: ${error?.message || '알 수 없는 서버 에러가 발생했습니다.'}` 
+      message: error?.message || '서버 오류가 발생했습니다.' 
     }, { status: 500 });
   }
 }
