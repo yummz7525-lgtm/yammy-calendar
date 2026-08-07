@@ -1,48 +1,39 @@
 import { NextResponse } from 'next/server';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '0525';
 
-// Firebase Private Key 자동 줄바꿈 처리
-function getFormattedPrivateKey() {
-  const rawKey = process.env.FIREBASE_PRIVATE_KEY;
-  if (!rawKey) return undefined;
-  
-  // 따옴표 제거 및 \n 문자열을 실제 줄바꿈으로 변환
-  let formatted = rawKey.replace(/^"|"$/g, '');
-  formatted = formatted.replace(/\\n/g, '\n');
-  return formatted;
-}
+// Client SDK 설정 정보 (인증 키 문제 없이 백엔드에서 바로 Firestore 접근 가능)
+const firebaseConfig = {
+  apiKey: "AIzaSyB7d3FUDU3snyXBrrJ5VxRJz1RLNjwLd7k",
+  authDomain: "yammy-broadcast-schedule.firebaseapp.com",
+  projectId: "yammy-broadcast-schedule",
+  storageBucket: "yammy-broadcast-schedule.firebasestorage.app",
+  messagingSenderId: "214674453159",
+  appId: "1:214674453159:web:47344e1796c9ec643fa182",
+  measurementId: "G-G5FP9KCGTM"
+};
 
-if (!getApps().length) {
-  try {
-    initializeApp({
-      credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID || "yammy-broadcast-schedule",
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: getFormattedPrivateKey(),
-      }),
-    });
-  } catch (err) {
-    console.error('Firebase Admin Init Error:', err);
-  }
-}
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const db = getFirestore(app);
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { password, action, newEvent, updatedEvent, selectedEventId, title } = body;
 
+    // 1. 비밀번호 검증
     if (password !== ADMIN_PASSWORD) {
       return NextResponse.json({ success: false, message: '비밀번호가 올바르지 않습니다.' }, { status: 401 });
     }
 
-    const db = getFirestore();
-    const docRef = db.collection('calendar').doc('events');
-    const docSnap = await docRef.get();
-    let events = docSnap.exists ? (docSnap.data()?.list || []) : [];
+    // 2. Firebase Firestore 문서 읽기
+    const docRef = doc(db, 'calendar', 'events');
+    const docSnap = await getDoc(docRef);
+    let events = docSnap.exists() ? (docSnap.data()?.list || []) : [];
 
+    // 3. 수정 / 삭제 / 추가 로직 수행
     if (action === 'ADD') {
       events.push(newEvent);
     } else if (action === 'EDIT') {
@@ -65,14 +56,15 @@ export async function POST(request: Request) {
       });
     }
 
-    await docRef.set({ list: events });
+    // 4. 저장
+    await setDoc(docRef, { list: events });
     return NextResponse.json({ success: true, list: events });
 
   } catch (error: any) {
-    console.error('API Server Error:', error);
+    console.error('API Error:', error);
     return NextResponse.json({ 
       success: false, 
-      message: error?.message || '서버 오류가 발생했습니다.' 
+      message: error?.message || 'DB 업데이트 중 오류가 발생했습니다.' 
     }, { status: 500 });
   }
 }
