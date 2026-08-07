@@ -1,30 +1,63 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
 
+// GET: 일정 조회
+export async function GET() {
+  try {
+    const db = adminDb as any;
+    const snapshot = await db.collection('events').get();
+    const events = snapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return NextResponse.json(events);
+  } catch (error) {
+    console.error('GET Error:', error);
+    return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 });
+  }
+}
+
+// POST: 일정 추가
 export async function POST(request: Request) {
   try {
-    const { password, action, selectedEventId, updatedEvent, newEvent } = await request.json();
+    const body = await request.json();
+    const db = adminDb as any;
+    const docRef = await db.collection('events').add(body);
+    return NextResponse.json({ id: docRef.id, ...body });
+  } catch (error) {
+    console.error('POST Error:', error);
+    return NextResponse.json({ error: 'Failed to add event' }, { status: 500 });
+  }
+}
 
-    if (password !== process.env.ADMIN_PASSWORD) {
-      return NextResponse.json({ success: false, message: '비밀번호가 올바르지 않습니다.' }, { status: 401 });
-    }
+// PUT: 일정 수정
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, ...data } = body;
+    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 
-    const docRef = adminDb.collection('calendar').doc('events');
-    const docSnap = await docRef.get();
-    let currentEvents: any[] = docSnap.exists ? (docSnap.data()?.list || []) : [];
+    const db = adminDb as any;
+    await db.collection('events').doc(id).update(data);
+    return NextResponse.json({ id, ...data });
+  } catch (error) {
+    console.error('PUT Error:', error);
+    return NextResponse.json({ error: 'Failed to update event' }, { status: 500 });
+  }
+}
 
-    if (action === 'ADD') {
-      currentEvents.push(newEvent);
-    } else if (action === 'EDIT') {
-      currentEvents = currentEvents.map((e) => (e.id === updatedEvent.id ? { ...e, title: updatedEvent.title } : e));
-    } else if (action === 'DELETE') {
-      currentEvents = currentEvents.filter((e) => e.id !== selectedEventId);
-    }
+// DELETE: 일정 삭제
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 
-    await docRef.set({ list: currentEvents });
-
+    const db = adminDb as any;
+    await db.collection('events').doc(id).delete();
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    console.error('DELETE Error:', error);
+    return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 });
   }
 }
