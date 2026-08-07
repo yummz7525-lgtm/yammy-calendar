@@ -33,7 +33,7 @@ export default function ViewerCalendarPage() {
   useEffect(() => {
     setIsMounted(true);
     
-    // 브라우저 로컬 저장소에 저장된 비번 불러오기
+    // 브라우저 저장소에서 저장된 비번 불러오기
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('yammy_admin_pw');
       if (stored) setSavedPassword(stored);
@@ -47,7 +47,6 @@ export default function ViewerCalendarPage() {
 
   const callApi = async (action: 'ADD' | 'EDIT' | 'DELETE', payload: any) => {
     try {
-      // 저장된 비번이 있으면 사용, 없으면 입력한 비번 사용
       const authPassword = savedPassword || inputPassword;
 
       const response = await fetch('/api/calendar', {
@@ -62,20 +61,13 @@ export default function ViewerCalendarPage() {
 
       const result = await response.json();
       if (!result.success) {
-        // 비번이 틀렸을 경우 저장된 비번 삭제
-        if (savedPassword) {
-          localStorage.removeItem('yammy_admin_pw');
-          setSavedPassword('');
-        }
+        // 비번이 틀린 경우 저장된 비번 삭제
+        localStorage.removeItem('yammy_admin_pw');
+        setSavedPassword('');
+        
         const errMsg = result.message || result.error || '알 수 없는 오류가 발생했습니다.';
         alert(`❌ ${errMsg}`);
         return false;
-      }
-
-      // 성공 시 브라우저에 비번 저장 (다음부터 자동 통과)
-      if (authPassword) {
-        localStorage.setItem('yammy_admin_pw', authPassword);
-        setSavedPassword(authPassword);
       }
 
       return true;
@@ -93,7 +85,7 @@ export default function ViewerCalendarPage() {
     };
     setSelectedEvent(eventObj);
     
-    // 저장된 비번이 있으면 비번 창 스킵
+    // 이미 저장된 비번이 있으면 바로 수정/삭제 모달로 이동
     if (savedPassword) {
       setModalType('EVENT_ACTION');
     } else {
@@ -106,7 +98,7 @@ export default function ViewerCalendarPage() {
     setSelectedEvent(null);
     setSelectedDateStr(arg.dateStr);
     
-    // 저장된 비번이 있으면 비번 창 스킵
+    // 이미 저장된 비번이 있으면 바로 일정 등록 모달로 이동
     if (savedPassword) {
       setEventTitleInput('');
       setModalType('ADD_TITLE');
@@ -116,9 +108,14 @@ export default function ViewerCalendarPage() {
     }
   };
 
+  // 비밀번호 입력 후 [확인] 누를 때 즉시 저장 처리
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputPassword.trim()) return;
+
+    // 입력한 비번을 저장소에 기록
+    localStorage.setItem('yammy_admin_pw', inputPassword);
+    setSavedPassword(inputPassword);
 
     if (selectedEvent) {
       setModalType('EVENT_ACTION');
