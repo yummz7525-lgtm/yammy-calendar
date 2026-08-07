@@ -156,14 +156,16 @@ export default function ViewerCalendarPage() {
             white-space: normal !important; 
             margin-bottom: 2px !important;
             cursor: pointer;
+            text-align: center !important; /* 가운데 정렬 */
         }
         .fc-event-title { 
             color: #7c5fa2 !important; 
             white-space: normal !important; 
-            font-size: 0.72em !important; 
+            font-size: 0.68em !important; /* 글씨 크기 더 축소 */
             display: block; 
             line-height: 1.1;
             padding: 1px 2px !important;
+            text-align: center !important; /* 가운데 정렬 */
         }
         
         .fc .fc-button-primary { background-color: #cbb4e4 !important; border: none !important; color: white !important; font-weight: bold !important; }
@@ -175,7 +177,7 @@ export default function ViewerCalendarPage() {
           .calendar-box { padding: 10px !important; border-width: 3px !important; border-radius: 1rem !important; }
           .fc .fc-toolbar-title { font-size: 1.1rem !important; }
           .fc .fc-button { padding: 4px 8px !important; font-size: 0.8rem !important; }
-          .fc-event-title { font-size: 0.65rem !important; }
+          .fc-event-title { font-size: 0.62rem !important; }
         }
       `}</style>
 
