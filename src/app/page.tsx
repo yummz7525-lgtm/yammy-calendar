@@ -31,33 +31,43 @@ export default function ViewerCalendarPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    const unsubscribe = onSnapshot(doc(db, "calendar", "events"), (doc) => {
-      if (doc.exists()) setEvents(doc.data().list || []);
+    const unsubscribe = onSnapshot(doc(db, "calendar", "events"), (docSnap) => {
+      if (docSnap.exists()) setEvents(docSnap.data().list || []);
     });
     return () => unsubscribe();
   }, []);
 
   const callApi = async (action: 'ADD' | 'EDIT' | 'DELETE', payload: any) => {
-    const response = await fetch('/api/calendar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        password: inputPassword,
-        action,
-        ...payload
-      })
-    });
+    try {
+      const response = await fetch('/api/calendar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: inputPassword,
+          action,
+          ...payload
+        })
+      });
 
-    const result = await response.json();
-    if (!result.success) {
-      alert(`❌ ${result.message || '오류가 발생했습니다.'}`);
+      const result = await response.json();
+      if (!result.success) {
+        alert(`❌ ${result.message || result.error || '오류가 발생했습니다.'}`);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      alert('네트워크 또는 서버 오류가 발생했습니다.');
       return false;
     }
-    return true;
   };
 
   const handleEventClick = (arg: any) => {
-    setSelectedEvent(arg.event);
+    const eventObj = {
+      id: arg.event.id || arg.event.extendedProps?.id,
+      title: arg.event.title,
+      start: arg.event.startStr ? arg.event.startStr.split('T')[0] : ''
+    };
+    setSelectedEvent(eventObj);
     setInputPassword('');
     setModalType('PASSWORD');
   };
@@ -83,16 +93,26 @@ export default function ViewerCalendarPage() {
 
   const handleDeleteEvent = async () => {
     if (confirm('정말 삭제하시겠습니까?')) {
-      const ok = await callApi('DELETE', { selectedEventId: selectedEvent.id });
+      const ok = await callApi('DELETE', { 
+        selectedEventId: selectedEvent.id,
+        title: selectedEvent.title 
+      });
       if (ok) closeModal();
     }
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (eventTitleInput.trim()) {
+    if (eventTitleInput.trim() && selectedEvent) {
       const ok = await callApi('EDIT', {
-        updatedEvent: { id: selectedEvent.id, title: eventTitleInput }
+        selectedEventId: selectedEvent.id,
+        title: selectedEvent.title,
+        updatedEvent: { 
+          id: selectedEvent.id, 
+          title: eventTitleInput,
+          start: selectedEvent.start,
+          allDay: true
+        }
       });
       if (ok) closeModal();
     }
@@ -101,7 +121,12 @@ export default function ViewerCalendarPage() {
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (eventTitleInput.trim()) {
-      const newEvent = { id: String(Date.now()), title: eventTitleInput, start: selectedDateStr, allDay: true };
+      const newEvent = { 
+        id: String(Date.now()), 
+        title: eventTitleInput, 
+        start: selectedDateStr, 
+        allDay: true 
+      };
       const ok = await callApi('ADD', { newEvent });
       if (ok) closeModal();
     }
