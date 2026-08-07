@@ -51,12 +51,13 @@ export default function ViewerCalendarPage() {
 
       const result = await response.json();
       if (!result.success) {
-        alert(`❌ ${result.message || result.error || '오류가 발생했습니다.'}`);
+        const errMsg = result.message || result.error || '알 수 없는 오류가 발생했습니다.';
+        alert(`❌ ${errMsg}`);
         return false;
       }
       return true;
-    } catch (err) {
-      alert('네트워크 또는 서버 오류가 발생했습니다.');
+    } catch (err: any) {
+      alert(`❌ 통신 에러: ${err?.message || '네트워크 오류'}`);
       return false;
     }
   };
