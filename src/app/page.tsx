@@ -150,22 +150,37 @@ export default function ViewerCalendarPage() {
         
         .fc .fc-toolbar-title, .fc .fc-col-header-cell-cushion, .fc .fc-daygrid-day-number { color: #7c5fa2 !important; }
         
+        /* 일정 카드 박스 중앙 정렬 강제 */
         .fc-event { 
             background-color: #f1e7fc !important; 
             border-color: #cbb4e4 !important; 
             white-space: normal !important; 
             margin-bottom: 2px !important;
             cursor: pointer;
-            text-align: center !important; /* 가운데 정렬 */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
         }
+        
+        /* FullCalendar 내부 자식 컨테이너 가운데 정렬 강제 */
+        .fc-event-main, .fc-event-main-frame { 
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+        }
+
         .fc-event-title { 
             color: #7c5fa2 !important; 
             white-space: normal !important; 
-            font-size: 0.68em !important; /* 글씨 크기 더 축소 */
+            font-size: 0.68em !important; 
             display: block; 
             line-height: 1.1;
             padding: 1px 2px !important;
-            text-align: center !important; /* 가운데 정렬 */
+            text-align: center !important;
+            width: 100% !important;
         }
         
         .fc .fc-button-primary { background-color: #cbb4e4 !important; border: none !important; color: white !important; font-weight: bold !important; }
@@ -201,7 +216,7 @@ export default function ViewerCalendarPage() {
       </div>
 
       {modalType === 'PASSWORD' && (
-        <ModalWrapper onClose={closeModal}>
+        <ModalWrapper>
           <h3 style={{ color: '#7c5fa2', marginTop: 0, marginBottom: '1.2rem', fontSize: '1.2rem' }}>
             🔒 관리자 비밀번호
           </h3>
@@ -223,7 +238,7 @@ export default function ViewerCalendarPage() {
       )}
 
       {modalType === 'EVENT_ACTION' && (
-        <ModalWrapper onClose={closeModal}>
+        <ModalWrapper>
           <h3 style={{ color: '#7c5fa2', marginTop: 0, marginBottom: '1rem', fontSize: '1.1rem' }}>
             📌 '{selectedEvent?.title}'
           </h3>
@@ -247,7 +262,7 @@ export default function ViewerCalendarPage() {
       )}
 
       {modalType === 'EDIT_TITLE' && (
-        <ModalWrapper onClose={closeModal}>
+        <ModalWrapper>
           <h3 style={{ color: '#7c5fa2', marginTop: 0, marginBottom: '1.2rem', fontSize: '1.2rem' }}>
             ✏️ 일정 내용 수정
           </h3>
@@ -269,7 +284,7 @@ export default function ViewerCalendarPage() {
       )}
 
       {modalType === 'ADD_TITLE' && (
-        <ModalWrapper onClose={closeModal}>
+        <ModalWrapper>
           <h3 style={{ color: '#7c5fa2', marginTop: 0, marginBottom: '1.2rem', fontSize: '1.2rem' }}>
             📌 새 일정 등록 ({selectedDateStr})
           </h3>
@@ -293,14 +308,14 @@ export default function ViewerCalendarPage() {
   );
 }
 
-function ModalWrapper({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+function ModalWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.4)',
       display: 'flex', justifyContent: 'center', alignItems: 'center',
       zIndex: 9999
-    }} onClick={onClose}>
+    }}>
       <div style={{
         backgroundColor: '#ffffff',
         padding: '2rem',
@@ -309,7 +324,7 @@ function ModalWrapper({ children, onClose }: { children: React.ReactNode; onClos
         width: '90%', maxWidth: '320px',
         textAlign: 'center',
         boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
-      }} onClick={(e) => e.stopPropagation()}>
+      }}>
         {children}
       </div>
     </div>
